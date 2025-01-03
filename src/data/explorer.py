@@ -15,7 +15,7 @@ curs.execute(
 def row_to_model(row: tuple) -> Explorer:
     """Convert a row tuple to an Explorer object"""
     name, country, description = row
-    return Explorer(name, country, description)
+    return Explorer(name=name, country=country, description=description)
 
 
 def model_to_dict(explorer: Explorer) -> dict:
@@ -56,9 +56,7 @@ def modify(explorer: Explorer) -> Explorer:
             UPDATE explorer
             SET name = :name,
                 country = :country,
-                area = :area,
-                description = :description,
-                aka = :aka
+                description = :description
             WHERE name = :original_name
             """
     params = model_to_dict(explorer)
@@ -67,8 +65,8 @@ def modify(explorer: Explorer) -> Explorer:
     return get_one(explorer.name)
 
 
-def delete(explorer: Explorer) -> bool:
+def delete(name: str) -> bool:
     query = "DELETE FROM explorer WHERE name = :name"
-    params = {"name": explorer.name}
+    params = {"name": name}
     res = curs.execute(query, params)
     return bool(res)

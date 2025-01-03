@@ -17,7 +17,9 @@ curs.execute(
 def row_to_model(row: tuple) -> Creature:
     """Convert row tuple into Creature object"""
     name, country, area, description, aka = row
-    return Creature(name, country, area, description, aka)
+    return Creature(
+        name=name, country=country, area=area, description=description, aka=aka
+    )
 
 
 def model_to_dict(creature: Creature) -> dict:

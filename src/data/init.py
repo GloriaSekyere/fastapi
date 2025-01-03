@@ -16,8 +16,6 @@ def get_db(name: str | None = None, reset: bool = False):
             return
         conn = None
     if not name:
-        print(f"db: {os.getenv("CRYPTID_SQLITE_DB")}")
-        print(f"python_path: {os.getenv("PYTHONPATH")}")
         top_dir = Path(__file__).resolve().parents[1]  # repo top
         db_dir = top_dir / "db"
         db_name = "cryptid.db"
