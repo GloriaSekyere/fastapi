@@ -1,6 +1,8 @@
 from fastapi import APIRouter
 from models.creature import Creature
-import fake.creature as service
+
+# import fake.creature as service
+import service.creature as service
 
 router = APIRouter(prefix="/creature")
 
@@ -31,5 +33,5 @@ def replace(creature: Creature) -> Creature:
 
 
 @router.delete("/{name}")
-def delete(name: str) -> bool | None:
+def delete(name: str) -> bool:
     return service.delete(name)

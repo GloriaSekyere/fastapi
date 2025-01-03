@@ -1,6 +1,8 @@
 from fastapi import APIRouter
 from models.explorer import Explorer
-import fake.explorer as service
+
+# import fake.explorer as service
+import service.explorer as service
 
 router = APIRouter(prefix="/explorer")
 
@@ -31,5 +33,5 @@ def replace(explorer: Explorer) -> Explorer:
 
 
 @router.delete("/{name}")
-def delete(name: str) -> bool | None:
+def delete(name: str) -> bool:
     return service.delete(name)
