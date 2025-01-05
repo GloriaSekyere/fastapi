@@ -62,7 +62,7 @@ def create(creature: Creature) -> Creature:
     params: dict = model_to_dict(creature)
     try:
         curs.execute(query, params)
-    except InterruptedError:
+    except IntegrityError:
         raise Duplicate(msg=f"Creature {creature.name} already exists")
     return get_one(creature.name)
 
@@ -91,6 +91,8 @@ def modify(name: str, creature: Creature) -> Creature:
 
 def delete(name: str):
     """Remove a creature from the database"""
+    if not name:
+        return False
     query: str = "DELETE FROM creature WHERE name = :name"
     params: dict = {"name": name}
     curs.execute(query, params)

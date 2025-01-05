@@ -26,7 +26,7 @@ def create(explorer: Explorer) -> Explorer:
     try:
         return service.create(explorer)
     except Duplicate as exc:
-        raise HTTPException(status_code=404, detail=exc.msg)
+        raise HTTPException(status_code=409, detail=exc.msg)
 
 
 @router.patch("/{name}")
