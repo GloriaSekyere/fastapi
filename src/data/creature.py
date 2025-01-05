@@ -1,4 +1,5 @@
-from .init import curs
+from .init import curs, IntegrityError
+from error import Duplicate, Missing
 from models.creature import Creature
 
 curs.execute(
@@ -27,7 +28,7 @@ def model_to_dict(creature: Creature) -> dict:
     return creature.model_dump()
 
 
-def get_one(name: str) -> Creature | None:
+def get_one(name: str) -> Creature:
     """Find and return a Creature object by name"""
     query = """
             SELECT * FROM creature
@@ -36,7 +37,10 @@ def get_one(name: str) -> Creature | None:
     params = {"name": name}
     curs.execute(query, params)
     row = curs.fetchone()
-    return row_to_model(row)
+    if row:
+        return row_to_model(row)
+    else:
+        raise Missing(msg=f"Creature {name} does not exist")
 
 
 def get_all() -> list[Creature]:
@@ -48,18 +52,25 @@ def get_all() -> list[Creature]:
 
 
 def create(creature: Creature) -> Creature:
+    if not creature:
+        return None
     """Add a new creature to the dataabse"""
     query: str = """
             INSERT INTO creature (name, country,area, description, aka)
             VALUES (:name, :country, :area, :description, :aka)
             """
     params: dict = model_to_dict(creature)
-    curs.execute(query, params)
+    try:
+        curs.execute(query, params)
+    except InterruptedError:
+        raise Duplicate(msg=f"Creature {creature.name} already exists")
     return get_one(creature.name)
 
 
-def modify(creature: Creature) -> Creature:
+def modify(name: str, creature: Creature) -> Creature:
     """Modify or update a creature"""
+    if not (name and creature):
+        return None
     query: str = """
             UPDATE creature
             SET name = :name,
@@ -70,14 +81,18 @@ def modify(creature: Creature) -> Creature:
             WHERE name = :original_name
             """
     params: dict = model_to_dict(creature)
-    params["original_name"] = creature.name
+    params["original_name"] = name
     curs.execute(query, params)
-    return get_one(creature.name)
+    if curs.rowcount == 1:
+        return get_one(creature.name)
+    else:
+        raise Missing(msg=f"Creature {name} does not exist")
 
 
-def delete(name: str) -> bool:
+def delete(name: str):
     """Remove a creature from the database"""
     query: str = "DELETE FROM creature WHERE name = :name"
     params: dict = {"name": name}
-    res = curs.execute(query, params)
-    return bool(res)
+    curs.execute(query, params)
+    if curs.rowcount != 1:
+        raise Missing(msg=f"Creature {name} does not exist")

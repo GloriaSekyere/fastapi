@@ -1,7 +1,7 @@
 """Initialize SQLite database"""
 
 import os
-from sqlite3 import connect, Connection, Cursor
+from sqlite3 import connect, Connection, Cursor, IntegrityError
 from pathlib import Path
 
 conn: Connection | None = None

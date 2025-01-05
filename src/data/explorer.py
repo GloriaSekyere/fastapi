@@ -1,4 +1,5 @@
-from .init import curs
+from .init import curs, IntegrityError
+from error import Missing, Duplicate
 from models.explorer import Explorer
 
 curs.execute(
@@ -31,7 +32,10 @@ def get_one(name: str) -> Explorer:
     params = {"name": name}
     curs.execute(query, params)
     row = curs.fetchone()
-    return row_to_model(row)
+    if row:
+        return row_to_model(row)
+    else:
+        raise Missing(msg=f"Explorer {name} not found")
 
 
 def get_all() -> list[Explorer]:
@@ -41,17 +45,24 @@ def get_all() -> list[Explorer]:
     return [row_to_model(row) for row in rows]
 
 
-def create(explorer: Explorer):
+def create(explorer: Explorer) -> Explorer:
+    if not explorer:
+        return None
     query = """
             INSERT INTO explorer (name, country, description)
             VALUES (:name, :country, :description)
             """
     params = model_to_dict(explorer)
-    curs.execute(query, params)
+    try:
+        curs.execute(query, params)
+    except IntegrityError:
+        raise Duplicate(msg=f"Explorer {explorer.name} already exists")
     return get_one(explorer.name)
 
 
-def modify(explorer: Explorer) -> Explorer:
+def modify(name: str, explorer: Explorer) -> Explorer:
+    if not (name and explorer):
+        return None
     query = """
             UPDATE explorer
             SET name = :name,
@@ -60,13 +71,19 @@ def modify(explorer: Explorer) -> Explorer:
             WHERE name = :original_name
             """
     params = model_to_dict(explorer)
-    params["original_name"] = explorer.name
+    params["original_name"] = name
     curs.execute(query, params)
-    return get_one(explorer.name)
+    if curs.rowcount == 1:
+        return get_one(explorer.name)
+    else:
+        raise Missing(msg=f"Explorer {explorer.name} not found")
 
 
-def delete(name: str) -> bool:
+def delete(name: str):
+    if not name:
+        return False
     query = "DELETE FROM explorer WHERE name = :name"
     params = {"name": name}
-    res = curs.execute(query, params)
-    return bool(res)
+    curs.execute(query, params)
+    if curs.rowcount != 1:
+        raise Missing(msg=f"Explorer {name} not found")
