@@ -1,5 +1,10 @@
+import os
 from models.explorer import Explorer
-from data import explorer as data
+
+if os.getenv("CRYPTID_UNIT_TEST"):
+    from fake import explorer as data
+else:
+    from data import explorer as data
 
 
 def get_all() -> list[Explorer]:

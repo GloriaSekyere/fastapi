@@ -1,4 +1,5 @@
 .DS_Store
+.pytest_cache/
 
 # Byte-compiled / optimized files
 __pycache__/
