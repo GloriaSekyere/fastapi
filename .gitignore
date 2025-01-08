@@ -9,3 +9,5 @@ __pycache__/
 # Environments
 .venv/
 .env
+
+/src/auth.py
